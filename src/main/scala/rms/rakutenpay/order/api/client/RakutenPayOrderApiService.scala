@@ -5,18 +5,18 @@ import java.util.Base64
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.JsonBodyReadables._
 import play.api.libs.ws.JsonBodyWritables._
-import play.api.libs.ws.StandaloneWSClient
+import play.api.libs.ws.{StandaloneWSClient, WSRequestFilter}
 import play.api.libs.ws.ahc.{StandaloneAhcWSClient, StandaloneAhcWSRequest}
+import play.libs.ws.ahc.HeaderAppendingFilter
 
 import scala.concurrent.Future
-import RWSJsonFormatPool._
-import play.api.libs.json.Json
 
-case class RakutenPayOrderAPIService(serviceSecret: String, licenseKey: String) {
+class RakutenPayOrderApiService(serviceSecret: String, licenseKey: String) {
 
-  val auth: String = s"ESA ${Base64.getEncoder.encodeToString(s"${serviceSecret}:${licenseKey}".getBytes(StandardCharsets.UTF_8))}"
+  val requestFilter: WSRequestFilter = HeaderAppendingFilter(serviceSecret, licenseKey)
   implicit val system = ActorSystem()
   system.registerOnTermination {
     System.exit(0)
@@ -34,13 +34,14 @@ case class RakutenPayOrderAPIService(serviceSecret: String, licenseKey: String) 
     //    wsClient => wsClient.url("https://api.rms.rakuten.co.jp/es/2.0/order/getOrder/").post
     val req = client
       .url("https://api.rms.rakuten.co.jp/es/2.0/order/getOrder/")
-      .withHttpHeaders(
-        "Authorization" -> auth,
-        "Content-Type" -> "application/json; charset=utf-8"
-      )
-      .withMethod('POST)
+      .withRequestFilter(requestFilter)
+      .withMethod("POST")
       .withBody(Json.toJson(getOrderRequestModel))
       .asInstanceOf[StandaloneAhcWSRequest]
-      .buildRequest()
+
+    for {
+      response <- req.execute()
+      getOrderResponseModel <- Json.fromJson[GetOrderRequestModel](response.body[JsValue])
+    } yield getOrderResponseModel
   }
 }
