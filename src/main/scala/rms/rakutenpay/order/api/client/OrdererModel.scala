@@ -7,15 +7,15 @@ case class OrdererModel(
                          city: String,
                          subAddress: String,
                          familyName: String,
-                         firstName: String,
-                         familyNameKana: String,
-                         firstNameKana: String,
+                         firstName: Option[String] = None,
+                         familyNameKana: Option[String] = None,
+                         firstNameKana: Option[String] = None,
                          phoneNumber1: String,
                          phoneNumber2: String,
                          phoneNumber3: String,
                          emailAddress: String,
-                         sex: Option[String],
-                         birthYear: Option[Int],
-                         birthMonth: Option[Byte],
-                         birthDay: Option[Byte]
+                         sex: Option[String] = None,
+                         birthYear: Option[Int] = None,
+                         birthMonth: Option[Byte] = None,
+                         birthDay: Option[Byte] = None
                        )

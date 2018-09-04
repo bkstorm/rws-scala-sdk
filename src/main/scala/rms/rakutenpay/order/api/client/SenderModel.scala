@@ -7,9 +7,9 @@ case class SenderModel(
                         city: String,
                         subAddress: String,
                         familyName: String,
-                        firstName: Option[String],
-                        familyNameKana: Option[String],
-                        firstNameKana: Option[String],
+                        firstName: Option[String] = None,
+                        familyNameKana: Option[String] = None,
+                        firstNameKana: Option[String] = None,
                         phoneNumber1: String,
                         phoneNumber2: String,
                         phoneNumber3: String

@@ -3,7 +3,7 @@ package rms.rakutenpay.order.api.client
 case class WrappingModel(
                           title: Byte,
                           name: String,
-                          price: Option[Int],
+                          price: Option[Int] = None,
                           includeTaxFlag: Byte,
-                          deleteWrappingFlag: Byte
+                          deleteWrappingFlag: Option[Byte] = None
                         )

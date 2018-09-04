@@ -2,15 +2,15 @@ package rms.rakutenpay.order.api.client
 
 case class PackageModel(
                          basketId: Int,
-                         postagePrice: Int,
-                         deliveryPrice: Int,
-                         goodsTax: Int,
-                         goodsPrice: Long,
-                         totalPrice: Long,
-                         noshi: Option[String],
-                         packageDeleteFlag: Byte,
+                         postagePrice: Option[Int] = None,
+                         deliveryPrice: Option[Int] = None,
+                         goodsTax: Option[Int] = None,
+                         goodsPrice: Option[Long] = None,
+                         totalPrice: Option[Long] = None,
+                         noshi: Option[String] = None,
+                         packageDeleteFlag: Option[Byte] = None,
                          SenderModel: SenderModel,
                          ItemModelList: List[ItemModel],
-                         ShippingModelList: Option[ShippingModel],
-                         DeliveryCvsModel: Option[DeliveryCvsModel]
+                         ShippingModelList: Option[List[ShippingModel]] = None,
+                         DeliveryCvsModel: Option[DeliveryCvsModel] = None
                        )

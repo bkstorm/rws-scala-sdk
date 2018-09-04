@@ -1,5 +1,5 @@
 package rms.rakutenpay.order.api.client
 
-class BaseResponseModel {
-
+abstract class BaseResponseModel {
+  def MessageModelList: List[MessageModel]
 }
