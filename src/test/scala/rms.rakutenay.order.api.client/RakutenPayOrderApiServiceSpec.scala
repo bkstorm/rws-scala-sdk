@@ -2,10 +2,11 @@ package rms.rakutenay.order.api.client
 
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
-import rms.rakutenpay.order.api.client.{GetOrderRequestModel, GetOrderResponseModel, RakutenPayOrderApiService}
+import rms.rakutenpay.order.api.client._
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 class RakutenPayOrderApiServiceSpec extends Specification with Mockito {
 
@@ -14,7 +15,13 @@ class RakutenPayOrderApiServiceSpec extends Specification with Mockito {
   "RakutenPayOrderApiService should" >> {
 
     "get order correctly when it exists" >> {
-      Await.result(rakutenPayOrderApiService.getOrder(GetOrderRequestModel(List("360238-20180724-00000810"))), Duration.Inf) must beAnInstanceOf[GetOrderResponseModel]
+      val response = rakutenPayOrderApiService.getOrder(GetOrderRequestModel(List("360238-20180829-00000723")))
+      response must beAnInstanceOf[GetOrderResponseModel]
+    }
+
+    "get payment " >> {
+      Await.result(Future(rakutenPayOrderApiService.getPayment(GetPaymentRequestModel("360238-20180829-00000723"))
+      ), Duration.Inf) must beAnInstanceOf[GetPaymentResponseModel]
     }
 
   }

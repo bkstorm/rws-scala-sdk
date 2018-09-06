@@ -1,16 +1,57 @@
 package rms.rakutenpay.order.api.client
 
+import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
+import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.Writes._
 import play.api.libs.json._
 
 object RWSFormats {
-  implicit val dateTimeWriter: Writes[DateTime] = JodaWrites.jodaDateWrites("yyyy-MM-dd'T'HH:mm:ssZ")
-  implicit val dateTimeJsReader: Reads[DateTime] = JodaReads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ssZ")
-  implicit val localTimeWriter: Writes[LocalDate] = JodaWrites.jodaLocalDateWrites("yyyy-MM-dd")
-  implicit val localTimeJsReader: Reads[LocalDate] = JodaReads.jodaLocalDateReads("yyyy-MM-dd")
+  implicit val dateTimeWriter: Writes[DateTime] = new Writes[DateTime] {
+    val df = org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ")
+
+    def writes(d: DateTime): JsValue = JsString(d.toString(df))
+  }
+  implicit val dateTimeJsReader: Reads[DateTime] = new Reads[DateTime] {
+
+    val df = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ")
+
+    def reads(json: JsValue): JsResult[DateTime] = json match {
+      case JsNumber(d) => JsSuccess(new DateTime(d.toLong))
+      case JsString(s) => parseDate(s) match {
+        case Some(d) => JsSuccess(d)
+        case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd'T'HH:mm:ssZ"))))
+      }
+      case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.date"))))
+    }
+
+    private def parseDate(input: String): Option[DateTime] =
+      scala.util.control.Exception.nonFatalCatch[DateTime] opt (DateTime.parse(input, df))
+
+  }
+
+  implicit val localTimeWriter: Writes[LocalDate] = {
+    val df = org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd")
+    Writes[LocalDate] { d => JsString(d.toString(df)) }
+  }
+
+  implicit val localTimeJsReader: Reads[LocalDate] = new Reads[org.joda.time.LocalDate] {
+
+    val df = DateTimeFormat.forPattern("yyyy-MM-dd")
+
+    def reads(json: JsValue): JsResult[LocalDate] = json match {
+      case JsString(s) => parseDate(s) match {
+        case Some(d) => JsSuccess(d)
+        case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.jodadate.format", "yyyy-MM-dd"))))
+      }
+      case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.date"))))
+    }
+
+    private def parseDate(input: String): Option[LocalDate] =
+      scala.util.control.Exception.nonFatalCatch[LocalDate] opt (LocalDate.parse(input, df))
+  }
 
   implicit def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]] {
     override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
@@ -21,32 +62,41 @@ object RWSFormats {
     }
   }
 
-  implicit val changeReasonModelFormat = Json.format[ChangeReasonModel]
-  implicit val couponModelFormat = Json.format[CouponModel]
-  implicit val deliveryCvsModelFormat = Json.format[DeliveryCvsModel]
-  implicit val deliveryModelFormat = Json.format[DeliveryModel]
-  implicit val itemModelFormat = Json.format[ItemModel]
-  implicit val messageModelFormat = Json.format[MessageModel]
-  implicit val ordererModelFormat = Json.format[OrdererModel]
+  implicit val dateTimeFormat:Format[DateTime] = new Format[DateTime] {
+    override def reads(json: JsValue): JsResult[DateTime] = dateTimeJsReader.reads(json)
+    override def writes(o: DateTime): JsValue = dateTimeWriter.writes(o)
+  }
+  implicit val localDateTimeFormat:Format[LocalDate] = new Format[LocalDate] {
+    override def reads(json: JsValue): JsResult[LocalDate] = localTimeJsReader.reads(json)
+    override def writes(o: LocalDate): JsValue = localTimeWriter.writes(o)
+  }
 
-  implicit val senderModelFormat = Json.format[SenderModel]
-  implicit val shippingModelFormat = Json.format[ShippingModel]
-  implicit val packageModelFormat = Json.format[PackageModel]
-  implicit val pointModelFormat = Json.format[PointModel]
-  implicit val settlementModelFormat = Json.format[SettlementModel]
-  implicit val wrappingModelFormat = Json.format[WrappingModel]
+  implicit val changeReasonModelFormat:Format[ChangeReasonModel] = Json.format[ChangeReasonModel]
+  implicit val couponModelFormat:Format[CouponModel] = Json.format[CouponModel]
+  implicit val deliveryCvsModelFormat:Format[DeliveryCvsModel] = Json.format[DeliveryCvsModel]
+  implicit val deliveryModelFormat:Format[DeliveryModel] = Json.format[DeliveryModel]
+  implicit val itemModelFormat:Format[ItemModel] = Json.format[ItemModel]
+  implicit val messageModelFormat:Format[MessageModel] = Json.format[MessageModel]
+  implicit val ordererModelFormat:Format[OrdererModel] = Json.format[OrdererModel]
 
-  implicit val basketidModelFormat = Json.format[BasketidModel]
+  implicit val senderModelFormat:Format[SenderModel] = Json.format[SenderModel]
+  implicit val shippingModelFormat:Format[ShippingModel] = Json.format[ShippingModel]
+  implicit val packageModelFormat:Format[PackageModel] = Json.format[PackageModel]
+  implicit val pointModelFormat:Format[PointModel] = Json.format[PointModel]
+  implicit val settlementModelFormat:Format[SettlementModel] = Json.format[SettlementModel]
+  implicit val wrappingModelFormat:Format[WrappingModel] = Json.format[WrappingModel]
 
-  implicit val paymentCardModelFormat = Json.format[PaymentCardModel]
-  implicit val paymentMultiModel = Json.format[PaymentMultiModel]
-  implicit val paymentBankModel = Json.format[PaymentBankModel]
-  implicit val refundModel = Json.format[RefundModel]
-  implicit val paymentModelFormat = Json.format[PaymentModel]
+  implicit val basketidModelFormat:Format[BasketidModel] = Json.format[BasketidModel]
 
-  implicit val sortModelFormat = Json.format[SortModel]
-  implicit val paginationRequestModelFormat = Json.format[PaginationRequestModel]
-  implicit val paginationResponseModelFormat = Json.format[PaginationResponseModel]
+  implicit val paymentCardModelFormat: Format[PaymentCardModel] = Json.format[PaymentCardModel]
+  implicit val paymentMultiModel: Format[PaymentMultiModel] = Json.format[PaymentMultiModel]
+  implicit val paymentBankModel: Format[PaymentBankModel] = Json.format[PaymentBankModel]
+  implicit val refundModel: Format[RefundModel] = Json.format[RefundModel]
+  implicit val paymentModelFormat: Format[PaymentModel] = Json.format[PaymentModel]
+
+  implicit val sortModelFormat: Format[SortModel] = Json.format[SortModel]
+  implicit val paginationRequestModelFormat: Format[PaginationRequestModel] = Json.format[PaginationRequestModel]
+  implicit val paginationResponseModelFormat: Format[PaginationResponseModel] = Json.format[PaginationResponseModel]
 
   val orderModelFirstFormat: OFormat[(String, Int, Option[Int], Option[String], DateTime, Option[DateTime], Option[DateTime], Option[DateTime], Option[DateTime], Option[LocalDate])] = (
     (__ \ "orderNumber").format[String] and
@@ -192,25 +242,25 @@ object RWSFormats {
       searchOrderModel.asurakuFlag, searchOrderModel.couponUseFlag, searchOrderModel.drugFlag, searchOrderModel.overseasFlag, searchOrderModel.PaginationRequestModel)
   ))
 
-  implicit val searchOrderResponseModelReads = Json.reads[SearchOrderResponseModel]
-  implicit val getOrderRequestModelWrites = Json.writes[GetOrderRequestModel]
-  implicit val getOrderResponseModelReads = Json.reads[GetOrderResponseModel]
-  implicit val confirmOrderRequestModelWrites = Json.writes[ConfirmOrderRequestModel]
-  implicit val confirmOrderResponseModelReads = Json.reads[ConfirmOrderResponseModel]
-  implicit val updateOrderShippingRequestModelWrites = Json.writes[UpdateShippingRequestModel]
-  implicit val updateOrderShippingResponseModelReads = Json.reads[UpdateShippingResponseModel]
-  implicit val updateOrderDeliveryRequestModelWrites = Json.writes[UpdateDeliveryRequestModel]
-  implicit val updateOrderDeliveryResponseModelReads = Json.reads[UpdateDeliveryResponseModel]
-  implicit val updateOrdererRequestModelWrites = Json.writes[UpdateOrdererRequestModel]
-  implicit val updateOrdererResponseModelReads = Json.reads[UpdateOrdererResponseModel]
-  implicit val updateOrderRemarksModelWrites = Json.writes[UpdateRemarksRequestModel]
-  implicit val updateOrderRemarksResponseModelReads = Json.reads[UpdateRemarksResponseModel]
-  implicit val updateSenderRequestModelWrites = Json.writes[UpdateSenderRequestModel]
-  implicit val updateSenderResponseModelReads = Json.reads[UpdateSenderResponseModel]
-  implicit val updateMemoRequestModelWrites = Json.writes[UpdateMemoRequestModel]
-  implicit val updateMemoResponseModelReads = Json.reads[UpdateMemoResponseModel]
-  implicit val getPaymentRequestModelWrites = Json.writes[GetPaymentRequestModel]
-  implicit val getPaymentResponseModelReads = Json.reads[GetPaymentResponseModel]
-  implicit val cancelOrderRequestModelWrites = Json.writes[CancelOrderRequestModel]
-  implicit val cancelOrderResponseModelReads = Json.reads[CancelOrderResponseModel]
+  implicit val searchOrderResponseModelReads: Reads[SearchOrderResponseModel] = Json.reads[SearchOrderResponseModel]
+  implicit val getOrderRequestModelWrites: Writes[GetOrderRequestModel] = Json.writes[GetOrderRequestModel]
+  implicit val getOrderResponseModelReads: Reads[GetOrderResponseModel] = Json.reads[GetOrderResponseModel]
+  implicit val confirmOrderRequestModelWrites: Writes[ConfirmOrderRequestModel] = Json.writes[ConfirmOrderRequestModel]
+  implicit val confirmOrderResponseModelReads: Reads[ConfirmOrderResponseModel] = Json.reads[ConfirmOrderResponseModel]
+  implicit val updateOrderShippingRequestModelWrites: Writes[UpdateShippingRequestModel] = Json.writes[UpdateShippingRequestModel]
+  implicit val updateOrderShippingResponseModelReads: Reads[UpdateShippingResponseModel] = Json.reads[UpdateShippingResponseModel]
+  implicit val updateOrderDeliveryRequestModelWrites: Writes[UpdateDeliveryRequestModel] = Json.writes[UpdateDeliveryRequestModel]
+  implicit val updateOrderDeliveryResponseModelReads: Reads[UpdateDeliveryResponseModel] = Json.reads[UpdateDeliveryResponseModel]
+  implicit val updateOrdererRequestModelWrites: Writes[UpdateOrdererRequestModel] = Json.writes[UpdateOrdererRequestModel]
+  implicit val updateOrdererResponseModelReads: Reads[UpdateOrdererResponseModel] = Json.reads[UpdateOrdererResponseModel]
+  implicit val updateOrderRemarksModelWrites: Writes[UpdateRemarksRequestModel] = Json.writes[UpdateRemarksRequestModel]
+  implicit val updateOrderRemarksResponseModelReads: Reads[UpdateRemarksResponseModel] = Json.reads[UpdateRemarksResponseModel]
+  implicit val updateSenderRequestModelWrites: Writes[UpdateSenderRequestModel] = Json.writes[UpdateSenderRequestModel]
+  implicit val updateSenderResponseModelReads: Reads[UpdateSenderResponseModel] = Json.reads[UpdateSenderResponseModel]
+  implicit val updateMemoRequestModelWrites: Writes[UpdateMemoRequestModel] = Json.writes[UpdateMemoRequestModel]
+  implicit val updateMemoResponseModelReads: Reads[UpdateMemoResponseModel] = Json.reads[UpdateMemoResponseModel]
+  implicit val getPaymentRequestModelWrites: Writes[GetPaymentRequestModel] = Json.writes[GetPaymentRequestModel]
+  implicit val getPaymentResponseModelReads: Reads[GetPaymentResponseModel] = Json.reads[GetPaymentResponseModel]
+  implicit val cancelOrderRequestModelWrites: Writes[CancelOrderRequestModel] = Json.writes[CancelOrderRequestModel]
+  implicit val cancelOrderResponseModelReads: Reads[CancelOrderResponseModel] = Json.reads[CancelOrderResponseModel]
 }
