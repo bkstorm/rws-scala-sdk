@@ -13,8 +13,8 @@ class UpdateOrderDeliveryFormatSpec extends Specification {
         deliveryName = "メール便"
       )
       val json = Json.toJson(model)
-      json.\("orderNumber").get.must_==(JsString("123456-20180101-1241583267"))
-      json.\("deliveryName").get.must_==(JsString("メール便"))
+      json("orderNumber").must_==(JsString("123456-20180101-1241583267"))
+      json("deliveryName").must_==(JsString("メール便"))
     }
   }
 }
