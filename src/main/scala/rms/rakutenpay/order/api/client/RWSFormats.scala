@@ -62,31 +62,33 @@ object RWSFormats {
     }
   }
 
-  implicit val dateTimeFormat:Format[DateTime] = new Format[DateTime] {
+  implicit val dateTimeFormat: Format[DateTime] = new Format[DateTime] {
     override def reads(json: JsValue): JsResult[DateTime] = dateTimeJsReader.reads(json)
+
     override def writes(o: DateTime): JsValue = dateTimeWriter.writes(o)
   }
-  implicit val localDateTimeFormat:Format[LocalDate] = new Format[LocalDate] {
+  implicit val localDateTimeFormat: Format[LocalDate] = new Format[LocalDate] {
     override def reads(json: JsValue): JsResult[LocalDate] = localTimeJsReader.reads(json)
+
     override def writes(o: LocalDate): JsValue = localTimeWriter.writes(o)
   }
 
-  implicit val changeReasonModelFormat:Format[ChangeReasonModel] = Json.format[ChangeReasonModel]
-  implicit val couponModelFormat:Format[CouponModel] = Json.format[CouponModel]
-  implicit val deliveryCvsModelFormat:Format[DeliveryCvsModel] = Json.format[DeliveryCvsModel]
-  implicit val deliveryModelFormat:Format[DeliveryModel] = Json.format[DeliveryModel]
-  implicit val itemModelFormat:Format[ItemModel] = Json.format[ItemModel]
-  implicit val messageModelFormat:Format[MessageModel] = Json.format[MessageModel]
-  implicit val ordererModelFormat:Format[OrdererModel] = Json.format[OrdererModel]
+  implicit val changeReasonModelFormat: Format[ChangeReasonModel] = Json.format[ChangeReasonModel]
+  implicit val couponModelFormat: Format[CouponModel] = Json.format[CouponModel]
+  implicit val deliveryCvsModelFormat: Format[DeliveryCvsModel] = Json.format[DeliveryCvsModel]
+  implicit val deliveryModelFormat: Format[DeliveryModel] = Json.format[DeliveryModel]
+  implicit val itemModelFormat: Format[ItemModel] = Json.format[ItemModel]
+  implicit val messageModelFormat: Format[MessageModel] = Json.format[MessageModel]
+  implicit val ordererModelFormat: Format[OrdererModel] = Json.format[OrdererModel]
 
-  implicit val senderModelFormat:Format[SenderModel] = Json.format[SenderModel]
-  implicit val shippingModelFormat:Format[ShippingModel] = Json.format[ShippingModel]
-  implicit val packageModelFormat:Format[PackageModel] = Json.format[PackageModel]
-  implicit val pointModelFormat:Format[PointModel] = Json.format[PointModel]
-  implicit val settlementModelFormat:Format[SettlementModel] = Json.format[SettlementModel]
-  implicit val wrappingModelFormat:Format[WrappingModel] = Json.format[WrappingModel]
+  implicit val senderModelFormat: Format[SenderModel] = Json.format[SenderModel]
+  implicit val shippingModelFormat: Format[ShippingModel] = Json.format[ShippingModel]
+  implicit val packageModelFormat: Format[PackageModel] = Json.format[PackageModel]
+  implicit val pointModelFormat: Format[PointModel] = Json.format[PointModel]
+  implicit val settlementModelFormat: Format[SettlementModel] = Json.format[SettlementModel]
+  implicit val wrappingModelFormat: Format[WrappingModel] = Json.format[WrappingModel]
 
-  implicit val basketidModelFormat:Format[BasketidModel] = Json.format[BasketidModel]
+  implicit val basketidModelFormat: Format[BasketidModel] = Json.format[BasketidModel]
 
   implicit val paymentCardModelFormat: Format[PaymentCardModel] = Json.format[PaymentCardModel]
   implicit val paymentMultiModel: Format[PaymentMultiModel] = Json.format[PaymentMultiModel]
@@ -97,6 +99,9 @@ object RWSFormats {
   implicit val sortModelFormat: Format[SortModel] = Json.format[SortModel]
   implicit val paginationRequestModelFormat: Format[PaginationRequestModel] = Json.format[PaginationRequestModel]
   implicit val paginationResponseModelFormat: Format[PaginationResponseModel] = Json.format[PaginationResponseModel]
+
+  implicit val subStatusModelFormat: Format[SubStatusModel] = Json.format[SubStatusModel]
+  implicit val statusModelFormat: Format[StatusModel] = Json.format[StatusModel]
 
   val orderModelFirstFormat: OFormat[(String, Int, Option[Int], Option[String], DateTime, Option[DateTime], Option[DateTime], Option[DateTime], Option[DateTime], Option[LocalDate])] = (
     (__ \ "orderNumber").format[String] and
@@ -263,4 +268,6 @@ object RWSFormats {
   implicit val getPaymentResponseModelReads: Reads[GetPaymentResponseModel] = Json.reads[GetPaymentResponseModel]
   implicit val cancelOrderRequestModelWrites: Writes[CancelOrderRequestModel] = Json.writes[CancelOrderRequestModel]
   implicit val cancelOrderResponseModelReads: Reads[CancelOrderResponseModel] = Json.reads[CancelOrderResponseModel]
+  implicit val getSubStatusListResponseModelReads: Reads[GetSubStatusListResponseModel] = Json.reads[GetSubStatusListResponseModel]
+
 }
